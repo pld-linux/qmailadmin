@@ -11,6 +11,7 @@ Source0:	http://www.inter7.com/%{name}/%{name}-%{version}.tar.gz
 #Source2:	%{name}.png
 URL:		http://inter7.com/qmailadmin.html
 BuildRequires:	vpopmail-devel >= 5.3.3-0.2
+BuildRequires:	mysql-devel
 Requires:	autorespond
 Requires:	ezmlm-idx
 Requires:	qmail
