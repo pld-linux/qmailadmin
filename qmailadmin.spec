@@ -1,8 +1,3 @@
-%define vuser vpopmail
-%define vgroup vchkpw
-%define vhome /var/lib/%{vuser}
-%define _htmldir /home/services/httpd
-
 Summary:	CGI admin interface to vpopmail
 Summary(pl):	Interfejs CGI do administrowania vpopmailem
 Name:		qmailadmin
@@ -15,10 +10,21 @@ Source0:	http://www.inter7.com/%{name}/%{name}-%{version}.tar.gz
 #Source1:	README.hooks.bz2
 #Source2:	%{name}.png
 URL:		http://inter7.com/qmailadmin.html
-Requires:	qmail autorespond webserver ezmlm-idx vpopmail
-BuildRequires:	autoconf
 BuildRequires:	vpopmail-devel >= 5.3.3-0.2
+Requires:	autorespond
+Requires:	ezmlm-idx
+Requires:	qmail
+Requires:	vpopmail
+Requires:	webserver
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
+
+%define		vuser		vpopmail
+%define		vgroup		vchkpw
+%define		vhome		/var/lib/%{vuser}
+%define		varqmail	/var/qmail
+%define		httpdir		/home/services/httpd
+%define		cgidir		/home/services/httpd/cgi-bin
+%define		htmldir		/home/services/httpd/html
 
 %description
 qmailadmin is a CGI software for administering vpopmail domains.
@@ -48,56 +54,51 @@ wystawiania rachunków lub zwyk³ego logowania.
 %setup -q
 
 %build
-%{__autoconf}
+#%{__autoconf}
 
-CFLAGS="%{rpmcflags} -I%{_includedir}/vpopmail"; export CFLAGS
-LIBS="/usr/lib/libvpopmail.a -lmysqlclient"; export LIBS
-
-%configure \
---enable-cgibindir=/home/httpd/cgi-bin \
---with-htmllibdir=%{_datadir}/%{name} \
---enable-htmldir=/images/%{name} \
---enable-cgipath=/cgi-bin/%{name}.cgi \
---enable-autoresponder-bin=%{_bindir}/autorespond \
---enable-vpopuser=%{vuser} \
---enable-vpopgroup=%{vgroup} \
---enable-qmaildir=/var/qmail \
---enable-ezmlmdir=%{_bindir} \
---enable-vpopmaildir=%{vhome} \
---enable-maxpopusers=-1 \
---enable-maxaliases=-1 \
---enable-maxforwards=-1 \
---enable-maxautoresponders=-1 \
---enable-maxmailinglists=-1 \
---enable-maxusersperpage=15 \
---enable-maxaliasesperpage=25 \
---enable-ezmlmidx=y \
---enable-defaultquota=-1 \
---enable-no-cache=y
+CFLAGS="%{rpmcflags} -I/usr/include/vpopmail"
+LIBS="/usr/%{_lib}/libvpopmail.a -lmysqlclient"; export LIBS
+# don't use -lnsl
+export ac_cv_lib_nsl_gethostbyaddr=no
+# don't regenerate, configure has been modified
+%configure2_13 \
+	--enable-cgibindir=%{cgidir} \
+	--with-htmllibdir=%{_datadir}/%{name} \
+	--enable-htmldir=/images/%{name} \
+	--enable-cgipath=/cgi-bin/%{name}.cgi \
+	--enable-autoresponder-bin=%{_bindir}/autorespond \
+	--enable-vpopuser=%{vuser} \
+	--enable-vpopgroup=%{vgroup} \
+	--enable-qmaildir=%{varqmail} \
+	--enable-ezmlmdir=%{_bindir} \
+	--enable-vpopmaildir=%{vhome} \
+	--enable-maxpopusers=-1 \
+	--enable-maxaliases=-1 \
+	--enable-maxforwards=-1 \
+	--enable-maxautoresponders=-1 \
+	--enable-maxmailinglists=-1 \
+	--enable-maxusersperpage=15 \
+	--enable-maxaliasesperpage=25 \
+	--enable-ezmlmidx=y \
+	--enable-defaultquota=-1 \
+	--enable-no-cache=y
 
 %{__make}
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT/%{_htmldir}/html \
-	$RPM_BUILD_ROOT/%{_htmldir}/cgi-bin \
-	$RPM_BUILD_ROOT/%{_htmldir}/images/%{name} \
-	$RPM_BUILD_ROOT/%{_datadir}/%{name}/html \
-	$RPM_BUILD_ROOT/%{_menudir} \
+install -d $RPM_BUILD_ROOT{%{htmldir}/images/%{name},%{cgidir}} \
+	$RPM_BUILD_ROOT%{_datadir}/%{name}/html \
 	$RPM_BUILD_ROOT%{_libdir}/%{name}/scripts
 
-install -d $RPM_BUILD_ROOT{%{_datadir}/%{name}/html,%{_libdir}/%{name}/scripts} \
-	$RPM_BUILD_ROOT/home/httpd/{cgi-bin,html/images/%{name}} \
-	$RPM_BUILD_ROOT{%{_menudir},%{_pixmapsdir}/hicolor/16x16/apps}
-
-install %{name} $RPM_BUILD_ROOT%{_htmldir}/cgi-bin/%{name}.cgi
+install %{name} $RPM_BUILD_ROOT%{cgidir}/%{name}.cgi
 
 # install the templates and the language files.
 install html/* $RPM_BUILD_ROOT%{_datadir}/%{name}/html
 
 # install the images.
-install images/* $RPM_BUILD_ROOT/%{_htmldir}/images/%{name}
-cp $RPM_BUILD_ROOT/%{_datadir}/%{name}/html/en $RPM_BUILD_ROOT/%{_datadir}/%{name}/html/en-us
+install images/* $RPM_BUILD_ROOT%{htmldir}/images/%{name}
+cp $RPM_BUILD_ROOT%{_datadir}/%{name}/html/en $RPM_BUILD_ROOT%{_datadir}/%{name}/html/en-us
 
 # install script to call the web interface from the menu.
 cat <<EOF > $RPM_BUILD_ROOT%{_libdir}/%{name}/scripts/%{name}
@@ -120,24 +121,18 @@ fi
 \$browser \$url
 EOF
 
-# install menu entry.
-#cat <<EOF > $RPM_BUILD_ROOT%{_menudir}/%{name}
-#?package(%{name}): needs=X11 \
-#section=Configuration/Networking \
-#title="%{name} tool" \
-#longtitle="Web-based administration tool for qmail+vpopmail, works with every browser. Set the $BROWSER environment variable to choose your preferred browser." \
-#command="%{_libdir}/%{name}/scripts/%{name} 1>/dev/null 2>/dev/null" \
-#icon="%{_pixmapsdir}/hicolor/16x16/apps/%{name}.png"
-#EOF
-
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
 %doc AUTHORS ChangeLog FAQ INSTALL NEWS README*
-%attr(6755,%{vuser},%{vgroup}) /home/httpd/cgi-bin/%{name}.cgi
+%attr(6755,%{vuser},%{vgroup}) %{cgidir}/%{name}.cgi
+%dir %{_datadir}/%{name}
+%dir %{_datadir}/%{name}/html
+# XXX: files in _datadir cannot be config
 %config(noreplace) %{_datadir}/%{name}/html/*
-%config(noreplace) %{_htmldir}/images/%{name}/*
-#%{_menudir}/%{name}
-%attr(0755,root,root) %{_libdir}/%{name}/scripts/%{name}
+%dir %{htmldir}/images
+%dir %{htmldir}/images/%{name}
+%config(noreplace) %{htmldir}/images/%{name}/*
+%attr(755,root,root) %{_libdir}/%{name}/scripts/%{name}
