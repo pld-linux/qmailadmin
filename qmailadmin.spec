@@ -5,8 +5,7 @@ Version:	1.0.6
 Release:	0.1
 License:	GPL
 Group:		Networking/Mail
-#Source0Download: http://inter7.com/index.php?page=qmailadmin
-Source0:	http://www.inter7.com/qmailadmin/%{name}-%{version}.tar.gz
+Source0:	http://dl.sourceforge.net/qmailadmin/%{name}-%{version}.tar.gz
 # Source0-md5:	7a6a4acb4f8a04b4cf5170778713020b
 #Source1:	README.hooks.bz2
 #Source2:	%{name}.png
