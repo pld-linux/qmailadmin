@@ -10,6 +10,7 @@ Release:	1
 License:	GPL
 Group:		Networking/Mail
 Source0:	%{name}-%{version}.tar.gz
+# Source0-md5:	87ddbcb911738b528f5f840315396d6f
 #Source1:	README.hooks.bz2
 #Source2:	%{name}.png
 URL:		http://inter7.com/qmailadmin/
