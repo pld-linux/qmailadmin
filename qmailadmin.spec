@@ -1,22 +1,23 @@
 %define vuser vpopmail
 %define vgroup vchkpw
-%define vhome /home/%{vuser}
+%define vhome /var/lib/%{vuser}
+%define _htmldir /home/services/httpd
 
 Summary:	CGI admin interface to vpopmail
 Summary(pl):	Interfejs CGI do administrowania vpopmailem
 Name:		qmailadmin
-Version:	1.0.1
-Release:	1
+Version:	1.0.6
+Release:	0.1
 License:	GPL
 Group:		Networking/Mail
-Source0:	%{name}-%{version}.tar.gz
-# Source0-md5:	87ddbcb911738b528f5f840315396d6f
+Source0:	http://www.inter7.com/%{name}/%{name}-%{version}.tar.gz
+# Source0-md5:	7a6a4acb4f8a04b4cf5170778713020b
 #Source1:	README.hooks.bz2
 #Source2:	%{name}.png
-URL:		http://inter7.com/qmailadmin/
+URL:		http://inter7.com/qmailadmin.html
 Requires:	qmail autorespond webserver ezmlm-idx vpopmail
 BuildRequires:	autoconf
-BuildRequires:	vpopmail-devel
+BuildRequires:	vpopmail-devel >= 5.3.3-0.2
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
@@ -48,6 +49,10 @@ wystawiania rachunków lub zwyk³ego logowania.
 
 %build
 %{__autoconf}
+
+CFLAGS="%{rpmcflags} -I%{_includedir}/vpopmail"; export CFLAGS
+LIBS="/usr/lib/libvpopmail.a -lmysqlclient"; export LIBS
+
 %configure \
 --enable-cgibindir=/home/httpd/cgi-bin \
 --with-htmllibdir=%{_datadir}/%{name} \
@@ -74,22 +79,25 @@ wystawiania rachunków lub zwyk³ego logowania.
 
 %install
 rm -rf $RPM_BUILD_ROOT
+install -d $RPM_BUILD_ROOT/%{_htmldir}/html \
+	$RPM_BUILD_ROOT/%{_htmldir}/cgi-bin \
+	$RPM_BUILD_ROOT/%{_htmldir}/images/%{name} \
+	$RPM_BUILD_ROOT/%{_datadir}/%{name}/html \
+	$RPM_BUILD_ROOT/%{_menudir} \
+	$RPM_BUILD_ROOT%{_libdir}/%{name}/scripts
+
 install -d $RPM_BUILD_ROOT{%{_datadir}/%{name}/html,%{_libdir}/%{name}/scripts} \
 	$RPM_BUILD_ROOT/home/httpd/{cgi-bin,html/images/%{name}} \
 	$RPM_BUILD_ROOT{%{_menudir},%{_pixmapsdir}/hicolor/16x16/apps}
 
-install %{name} $RPM_BUILD_ROOT/home/httpd/cgi-bin/%{name}.cgi
+install %{name} $RPM_BUILD_ROOT%{_htmldir}/cgi-bin/%{name}.cgi
 
 # install the templates and the language files.
 install html/* $RPM_BUILD_ROOT%{_datadir}/%{name}/html
 
 # install the images.
-#install images/*.png %{buildroot}/var/www/html/images/%{name}/
-
-# install the hooks documentation.
-#bzcat %{SOURCE1} > README.hooks
-
-#install %{SOURCE2} %{buildroot}%{_iconsdir}/hicolor/16x16/apps/
+install images/* $RPM_BUILD_ROOT/%{_htmldir}/images/%{name}
+cp $RPM_BUILD_ROOT/%{_datadir}/%{name}/html/en $RPM_BUILD_ROOT/%{_datadir}/%{name}/html/en-us
 
 # install script to call the web interface from the menu.
 cat <<EOF > $RPM_BUILD_ROOT%{_libdir}/%{name}/scripts/%{name}
@@ -113,24 +121,23 @@ fi
 EOF
 
 # install menu entry.
-cat <<EOF > $RPM_BUILD_ROOT%{_menudir}/%{name}
-?package(%{name}): needs=X11 \
-section=Configuration/Networking \
-title="%{name} tool" \
-longtitle="Web-based administration tool for qmail+vpopmail, works with every browser. Set the $BROWSER environment variable to choose your preferred browser." \
-command="%{_libdir}/%{name}/scripts/%{name} 1>/dev/null 2>/dev/null" \
-icon="%{_pixmapsdir}/hicolor/16x16/apps/%{name}.png"
-EOF
+#cat <<EOF > $RPM_BUILD_ROOT%{_menudir}/%{name}
+#?package(%{name}): needs=X11 \
+#section=Configuration/Networking \
+#title="%{name} tool" \
+#longtitle="Web-based administration tool for qmail+vpopmail, works with every browser. Set the $BROWSER environment variable to choose your preferred browser." \
+#command="%{_libdir}/%{name}/scripts/%{name} 1>/dev/null 2>/dev/null" \
+#icon="%{_pixmapsdir}/hicolor/16x16/apps/%{name}.png"
+#EOF
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%doc AUTHORS ChangeLog FAQ INSTALL NEWS README* themes/README.default
+%doc AUTHORS ChangeLog FAQ INSTALL NEWS README*
 %attr(6755,%{vuser},%{vgroup}) /home/httpd/cgi-bin/%{name}.cgi
 %config(noreplace) %{_datadir}/%{name}/html/*
-%config(noreplace) /home/httpd/html/images/%{name}/*
-%{_libdir}/menu/%{name}
-%attr(755,root,root) %{_libdir}/%{name}/scripts/%{name}
-%{_iconsdir}/hicolor/16x16/apps/%{name}.png
+%config(noreplace) %{_htmldir}/images/%{name}/*
+#%{_menudir}/%{name}
+%attr(0755,root,root) %{_libdir}/%{name}/scripts/%{name}
