@@ -121,14 +121,12 @@ command="%{_libdir}/%{name}/scripts/%{name} 1>/dev/null 2>/dev/null" \
 icon="%{_pixmapsdir}/hicolor/16x16/apps/%{name}.png"
 EOF
 
-gzip -9nf AUTHORS ChangeLog FAQ INSTALL NEWS README* themes/README.default
-
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%doc AUTHORS.gz ChangeLog.gz FAQ.gz INSTALL.gz NEWS.gz README*.gz themes/README.default.gz
+%doc AUTHORS ChangeLog FAQ INSTALL NEWS README* themes/README.default
 %attr(6755,%{vuser},%{vgroup}) /home/httpd/cgi-bin/%{name}.cgi
 %config(noreplace) %{_datadir}/%{name}/html/*
 %config(noreplace) /home/httpd/html/images/%{name}/*
