@@ -46,7 +46,7 @@ wystawiania rachunków lub zwyk³ego logowania.
 %setup -q
 
 %build
-autoconf
+%{__autoconf}
 %configure \
 --enable-cgibindir=/home/httpd/cgi-bin \
 --with-htmllibdir=%{_datadir}/%{name} \
