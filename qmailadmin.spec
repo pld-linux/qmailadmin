@@ -3,21 +3,23 @@
 %define vhome /home/%{vuser}
 
 Summary:	CGI admin interface to vpopmail
+Summary(pl):	Interfejs CGI do administrowania vpopmailem
 Name:		qmailadmin
 Version:	1.0.1
 Release:	1
 License:	GPL
 Group:		Networking/Mail
-URL:		http://inter7.com/qmailadmin/
 Source0:	%{name}-%{version}.tar.gz
 #Source1:	README.hooks.bz2
 #Source2:	%{name}.png
+URL:		http://inter7.com/qmailadmin/
 Requires:	qmail autorespond webserver ezmlm-idx vpopmail
+BuildRequires:	autoconf
 BuildRequires:	vpopmail-devel
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
-qmailadmin is a cgi software for administering vpopmail domains.
+qmailadmin is a CGI software for administering vpopmail domains.
 
 Every e-mail domain owner can manage its users, forwards,
 autoresponders and mailinglists without nagging the system owner at
@@ -28,15 +30,23 @@ or deletes users, forwards, autoresponders and mailinglists. The main
 reason you might want this is for billing purposes or just plain
 logging.
 
-%prep
-rm -rf %{buildroot}
+%description -l pl
+qmailadmin to program CGI do administrowania domenami vpopmaila.
 
-%setup -q -n %{name}-%{version}
+Ka¿dy w³a¶ciciel domeny pocztowej mo¿e zarz±dzaæ swoimi u¿ytkownikami,
+przekierowaniami, automatycznymi odpowiedziami i listami dyskusyjnymi
+bez udzia³u administratora systemu.
+
+qmailadmin ma mo¿liwo¶æ uruchamiania zewnêtrznych programów kiedy
+w³a¶ciciel domeny dodaje lub usuwa u¿ytkowników, przekierowania,
+automatyczne odpowiedzi i listy dyskusyjne. Mo¿e to s³u¿yæ do
+wystawiania rachunków lub zwyk³ego logowania.
+
+%prep
+%setup -q
 
 %build
 autoconf
-export CFLAGS="%{rpmcflags}"
-export CXXFLAGS="%{rpmcflags}"
 %configure \
 --enable-cgibindir=/home/httpd/cgi-bin \
 --with-htmllibdir=%{_datadir}/%{name} \
@@ -58,24 +68,19 @@ export CXXFLAGS="%{rpmcflags}"
 --enable-ezmlmidx=y \
 --enable-defaultquota=-1 \
 --enable-no-cache=y
-%make
+
+%{__make}
 
 %install
 rm -rf $RPM_BUILD_ROOT
-rm -rf %{buildroot}
-install -d %{buildroot}%{_datadir}/%{name}/html
-install -d %{buildroot}/home/httpd/cgi-bin
-install -d %{buildroot}/home/httpd/html/images/%{name}
-install -d %{buildroot}%{_menudir}
-install -d %{buildroot}%{_libdir}/%{name}/scripts
-install -d %{buildroot}%{_iconsdir}/hicolor/16x16/apps/
+install -d $RPM_BUILD_ROOT{%{_datadir}/%{name}/html,%{_libdir}/%{name}/scripts} \
+	$RPM_BUILD_ROOT/home/httpd/{cgi-bin,html/images/%{name}} \
+	$RPM_BUILD_ROOT{%{_menudir},%{_pixmapsdir}/hicolor/16x16/apps}
 
-
-install  -s -m 6755 -g %{vgroup} -o %{vuser} %{name} \
- %{buildroot}/home/httpd/cgi-bin/%{name}.cgi
+install %{name} $RPM_BUILD_ROOT/home/httpd/cgi-bin/%{name}.cgi
 
 # install the templates and the language files.
-install html/* %{buildroot}%{_datadir}/%{name}/html/
+install html/* $RPM_BUILD_ROOT%{_datadir}/%{name}/html
 
 # install the images.
 #install images/*.png %{buildroot}/var/www/html/images/%{name}/
@@ -86,7 +91,7 @@ install html/* %{buildroot}%{_datadir}/%{name}/html/
 #install %{SOURCE2} %{buildroot}%{_iconsdir}/hicolor/16x16/apps/
 
 # install script to call the web interface from the menu.
-cat <<EOF > %{buildroot}%{_libdir}/%{name}/scripts/%{name}
+cat <<EOF > $RPM_BUILD_ROOT%{_libdir}/%{name}/scripts/%{name}
 #!/bin/sh
 url='http://localhost/cgi-bin/%{name}.cgi'
 if ! [ -z "\$BROWSER" ] && ( which \$BROWSER ); then
@@ -105,33 +110,28 @@ else
 fi
 \$browser \$url
 EOF
-chmod a+rx %{buildroot}%{_libdir}/%{name}/scripts/%{name}
 
 # install menu entry.
-cat <<EOF > %{buildroot}%{_menudir}/%{name}
+cat <<EOF > $RPM_BUILD_ROOT%{_menudir}/%{name}
 ?package(%{name}): needs=X11 \
 section=Configuration/Networking \
 title="%{name} tool" \
 longtitle="Web-based administration tool for qmail+vpopmail, works with every browser. Set the $BROWSER environment variable to choose your preferred browser." \
 command="%{_libdir}/%{name}/scripts/%{name} 1>/dev/null 2>/dev/null" \
-icon="%{_iconsdir}/hicolor/16x16/apps/%{name}.png"
+icon="%{_pixmapsdir}/hicolor/16x16/apps/%{name}.png"
 EOF
 
-%post
-if [ -x /usr/bin/update-menus ]; then /usr/bin/update-menus || true ; fi
-
-%preun
-if [ -x /usr/bin/update-menus ]; then /usr/bin/update-menus || true ; fi
+gzip -9nf AUTHORS ChangeLog FAQ INSTALL NEWS README* themes/README.default
 
 %clean
-rm -rf %{buildroot}
+rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%doc AUTHORS ChangeLog FAQ INSTALL NEWS README* themes/README.default
+%doc AUTHORS.gz ChangeLog.gz FAQ.gz INSTALL.gz NEWS.gz README*.gz themes/README.default.gz
 %attr(6755,%{vuser},%{vgroup}) /home/httpd/cgi-bin/%{name}.cgi
-%attr(644,root,root) %config(noreplace) %{_datadir}/%{name}/html/*
-%attr(644,root,root) %config(noreplace) /home/httpd/html/images/%{name}/*
-%attr(644,root,root) %{_libdir}/menu/%{name}
+%config(noreplace) %{_datadir}/%{name}/html/*
+%config(noreplace) /home/httpd/html/images/%{name}/*
+%{_libdir}/menu/%{name}
 %attr(755,root,root) %{_libdir}/%{name}/scripts/%{name}
-%attr(644,root,root) %{_iconsdir}/hicolor/16x16/apps/%{name}.png
+%{_iconsdir}/hicolor/16x16/apps/%{name}.png
