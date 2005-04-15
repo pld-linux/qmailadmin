@@ -136,4 +136,6 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{htmldir}/images
 %dir %{htmldir}/images/%{name}
 %config(noreplace) %{htmldir}/images/%{name}/*
+%dir %{_libdir}/%{name}
+%dir %{_libdir}/%{name}/scripts
 %attr(755,root,root) %{_libdir}/%{name}/scripts/%{name}
