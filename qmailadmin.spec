@@ -1,5 +1,5 @@
 Summary:	CGI admin interface to vpopmail
-Summary(pl):	Interfejs CGI do administrowania vpopmailem
+Summary(pl.UTF-8):   Interfejs CGI do administrowania vpopmailem
 Name:		qmailadmin
 Version:	1.0.6
 Release:	0.1
@@ -39,17 +39,17 @@ or deletes users, forwards, autoresponders and mailinglists. The main
 reason you might want this is for billing purposes or just plain
 logging.
 
-%description -l pl
+%description -l pl.UTF-8
 qmailadmin to program CGI do administrowania domenami vpopmaila.
 
-Kaødy w≥a∂ciciel domeny pocztowej moøe zarz±dzaÊ swoimi uøytkownikami,
+Ka≈ºdy w≈Ça≈õciciel domeny pocztowej mo≈ºe zarzƒÖdzaƒá swoimi u≈ºytkownikami,
 przekierowaniami, automatycznymi odpowiedziami i listami dyskusyjnymi
-bez udzia≥u administratora systemu.
+bez udzia≈Çu administratora systemu.
 
-qmailadmin ma moøliwo∂Ê uruchamiania zewnÍtrznych programÛw kiedy
-w≥a∂ciciel domeny dodaje lub usuwa uøytkownikÛw, przekierowania,
-automatyczne odpowiedzi i listy dyskusyjne. Moøe to s≥uøyÊ do
-wystawiania rachunkÛw lub zwyk≥ego logowania.
+qmailadmin ma mo≈ºliwo≈õƒá uruchamiania zewnƒôtrznych program√≥w kiedy
+w≈Ça≈õciciel domeny dodaje lub usuwa u≈ºytkownik√≥w, przekierowania,
+automatyczne odpowiedzi i listy dyskusyjne. Mo≈ºe to s≈Çu≈ºyƒá do
+wystawiania rachunk√≥w lub zwyk≈Çego logowania.
 
 %prep
 %setup -q
