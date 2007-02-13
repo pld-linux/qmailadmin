@@ -1,5 +1,5 @@
 Summary:	CGI admin interface to vpopmail
-Summary(pl.UTF-8):   Interfejs CGI do administrowania vpopmailem
+Summary(pl.UTF-8):	Interfejs CGI do administrowania vpopmailem
 Name:		qmailadmin
 Version:	1.0.6
 Release:	0.1
